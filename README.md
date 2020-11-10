@@ -25,7 +25,7 @@ Each dataset contains a file named 'slides_labels.csv' that stores the weak samp
 
 ## **Using the code**
 
-### *** Red Blood Cell Segmentation *** 
+### *Red Blood Cell Segmentation* 
 
 ![The idea](/figs/moff_rbc_segmentation.png)  
 <p align="center">
@@ -37,7 +37,7 @@ Each dataset contains a file named 'slides_labels.csv' that stores the weak samp
 This will create a subfolder in the --output_folder corresponding to each of the folders existing in the --dataset_path. In each of these subfolders (corresponding to a BFS sample) this script will write images of individual RBC cropped from the initial image fields. 
 
 
-### *** Malaria Parasite Object Candidate Segmentation *** 
+### *Malaria Parasite Object Candidate Segmentation* 
 
 ![The idea](/figs/moff_parasite_segmentation.png)  
 <p align="center">
