@@ -64,9 +64,30 @@ For Malaria Detection:
 There is not a significant difference between the two scripts. There are some specific parameters hard coded for each case.
 
 
+### *Sickle Cell Detection*
+Once a model is trained on the SCD weak labels, it can be used to identify individual abnormal sickle cells in image fields: 
 
+    python moff_test_detect_sickle.py --fov ../test/pos008_EDOF_RGB.tiff --trained_model /path/to/your/trained/model --output_dir ../output_test
 
+Output the test image fields:
 
+![RBC detection](/figs/sickle_detection_test.png)  
+<p align="center">
+ Individual abdnormal Sickle Cell detection in BFS using MOFF</center>
+</p>
+
+### *Malaria Parasite Detection*
+
+Same approach works for Malaria Parasites detection.
+
+    python moff_test_detect_parasites.py --fov ../test/FieldPos009_EDOF_RGB.tiff --trained_model /path/to/your/trained/model --output_dir ../output_test
+
+Output the test image fields:
+
+![RBC detection](/figs/test_parasite_detection.png)  
+<p align="center">
+ Individual P.Falciparum parasite detection in TBF with MOFF</center>
+</p>
 
 
 
