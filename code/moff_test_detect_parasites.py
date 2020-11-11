@@ -80,18 +80,19 @@ def parasitesonly(rgb_image):
 
 
 parser = argparse.ArgumentParser(description='FastMal Classification')
-#parser.add_argument('--pred_json', dest='pred_json', default='355.json', help='json file containing the prediction output of the OmeroRFCN model')
-#parser.add_argument('--gt_json', dest='gt_json', default='355.json', help='json file containing the gorund truth annotations')
-parser.add_argument('--dataset', dest='dataset', default='.', help='path to slide images')
-parser.add_argument('--csv_labels', dest='csv_labels', default='.', help='the labels per slide in csv format')
-parser.add_argument('--output_dir', dest='output_dir', default='.', help='path to the test folder')
+parser.add_argument('--fov', dest='fov', default='../test/FieldPos009_EDOF_RGB.tiff', help='path to the test image')
+parser.add_argument('--trained_model', dest='trained_model', default='/home/pmanescu/SkyNet/VGG/january_fastmal_models/malaria_classifier1301_max_segmentation_ce20000_vgg19_model.npy', help='path to slide images')
+parser.add_argument('--output_dir', dest='output_dir', default='../output_test', help='path to the test folder')
 
 args = parser.parse_args()
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] ='0'#str(args.gpu)
 
-
+if not os.path.exists(args.output_dir):
+    os.makedirs(args.output_dir)
+    
+    
 IMSIZE = 64
 num_labels=2
 num_steps = 0
@@ -105,7 +106,7 @@ label_colors = [
     (60   , 0 , 150) ]
 
 
-test_img_path='/home/pmanescu/SkyNet/RawSplitDetectionData/test/398/FieldPos009_EDOF_RGB.tiff'
+test_img_path=args.fov# '/home/pmanescu/SkyNet/RawSplitDetectionData/test/398/FieldPos009_EDOF_RGB.tiff'
 #
 img = cv2.imread(test_img_path)
 
@@ -113,16 +114,16 @@ csize=44
 
 with tf.Session() as sess:
     mp_masks=parasitesonly(img)
-    cv2.imwrite('parasite_mask2.png', mp_masks)
+    cv2.imwrite(os.path.join(args.output_dir,'test_parasite_mask.png'), mp_masks)
     #saver = tf.train.Saver()
     images = tf.placeholder(tf.float32, [None, IMSIZE, IMSIZE, 3])
     true_out = tf.placeholder(tf.float32, [None, 2])
     train_mode = tf.placeholder(tf.bool)
 
     #vgg = vgg19.Vgg19('../models/vgg19.npy', imsize=64)
-    vgg = vgg19.Vgg19('../january_fastmal_models/malaria_classifier1301_max_segmentation_ce15000_vgg19_model.npy', imsize=64)
+    vgg = vgg19.Vgg19(args.trained_model, imsize=64)
     #vgg = vgg19.Vgg19('../january_fastmal_models/malaria_classifier1301_mean_segmentation_ce20000_vgg19_model.npy', imsize=64)
-    vgg.build_avg_pool(images, train_mode=train_mode)
+    vgg.build_avg_pool2(images, train_mode=train_mode)
     sess.run(tf.global_variables_initializer())
     
 
@@ -160,5 +161,5 @@ with tf.Session() as sess:
     plt.axis('off')
     plt.imshow(img)
     plt.show() 
-    cv2.imwrite('parasite_detection2.png', img)     
+    cv2.imwrite(os.path.join(args.output_dir, 'test_parasite_detection.png'), img)     
     

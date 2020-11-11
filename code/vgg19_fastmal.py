@@ -231,6 +231,51 @@ class Vgg19:
 
         self.new_prob = tf.nn.softmax(self.new_fc8, name="new_prob")  
         
+    def build_avg_pool2(self, rgb, train_mode=None):
+        """
+        load variable from npy to build the VGG
+
+        :param rgb: rgb image [batch, height, width, 3] values scaled [0, 1]
+        :param train_mode: a bool tensor, usually a placeholder: if True, dropout will be turned on
+        """
+
+        rgb_scaled = rgb * 255.0
+
+        # Convert RGB to BGR
+        red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=rgb_scaled)
+        assert red.get_shape().as_list()[1:] == [self.imsize, self.imsize, 1]
+        assert green.get_shape().as_list()[1:] == [self.imsize, self.imsize, 1]
+        assert blue.get_shape().as_list()[1:] == [self.imsize, self.imsize, 1]
+        bgr = tf.concat(axis=3, values=[
+            blue - VGG_MEAN[0],
+            green - VGG_MEAN[1],
+            red - VGG_MEAN[2],
+        ])
+        assert bgr.get_shape().as_list()[1:] == [self.imsize, self.imsize, 3]
+
+        self.pool5 = self.conv_layers(bgr)
+        #self.avg_pool5 = tf.reduce_mean(self.conv_layers(bgr), axis=0)
+        self.avg_pool5 = tf.reduce_max(self.conv_layers(bgr), axis=0)
+
+        self.new_fc6 = self.fc_layer(self.avg_pool5, 2048, 1024, "new_fc6")  # 25088 = ((224 // (2 ** 5)) ** 2) * 512
+        #self.new_fc6 = self.fc_layer(self.avg_pool5, 8192, 1024, "new_fc6")
+        self.new_relu6 = tf.nn.relu(self.new_fc6)
+        if train_mode is not None:
+            self.new_relu6 = tf.cond(train_mode, lambda: tf.nn.dropout(self.new_relu6, self.dropout), lambda: self.new_relu6)
+        elif self.trainable:
+            self.new_relu6 = tf.nn.dropout(self.new_relu6, self.dropout)
+
+        self.new_fc7 = self.fc_layer(self.new_relu6, 1024, 512, "new_fc7")
+        self.new_relu7 = tf.nn.relu(self.new_fc7)
+        if train_mode is not None:
+            self.new_relu7 = tf.cond(train_mode, lambda: tf.nn.dropout(self.new_relu7, self.dropout), lambda: self.new_relu7)
+        elif self.trainable:
+            self.new_relu7 = tf.nn.dropout(self.new_relu7, self.dropout)
+
+        self.new_fc8 = self.fc_layer(self.new_relu7, 512, 2, "new_fc8")
+
+        self.new_prob = tf.nn.softmax(self.new_fc8, name="new_prob")       
+        
         
         
     def build_avg_pool_fov(self, rgb, train_mode=None):
@@ -277,132 +322,7 @@ class Vgg19:
     
             self.new_prob = tf.nn.softmax(self.new_fc8, name="new_prob")         
 
-        #self.data_dict = None        
-#        
-#    def build_loop(self, rgb_list, no_images=10, train_mode=None, reuse=False):
-#        """
-#        load variable from npy to build the VGG
-#
-#        :param rgb: rgb image [batch, height, width, 3] values scaled [0, 1]
-#        :param train_mode: a bool tensor, usually a placeholder: if True, dropout will be turned on
-#        """
-##        with tf.variable_scope('NewVGG'):
-##        # image is 256 x 256 x input_c_dim
-##            if reuse:
-##                tf.get_variable_scope().reuse_variables()
-##            else:
-##                assert tf.get_variable_scope().reuse is False
-#        rgb_list_scaled = rgb_list * 255.00
-#
-#        # Convert RGB to BGR
-#        red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=rgb_list_scaled)
-#        assert red.get_shape().as_list()[1:] == [self.imsize, self.imsize, 1]
-#        assert green.get_shape().as_list()[1:] == [self.imsize, self.imsize, 1]
-#        assert blue.get_shape().as_list()[1:] == [self.imsize, self.imsize, 1]
-#        bgr_list = tf.concat(axis=3, values=[
-#            blue - VGG_MEAN[0],
-#            green - VGG_MEAN[1],
-#            red - VGG_MEAN[2],
-#        ])
-#        assert bgr_list.get_shape().as_list()[1:] == [self.imsize, self.imsize, 3]
-#        
-#        bgr = tf.expand_dims(bgr_list[0,:,:,:],0)
-#        self.temp_pool5 = self.conv_layers(bgr)
-#        stack_pool5 = self.temp_pool5 
-#        
-#        
-#        ntens = tf.Variable(1.0)
-#        for o in range(1, 10):
-#            #print(o)
-#            bgri=tf.expand_dims(bgr_list[o,:,:,:],0)
-#            self.temp_pool5 = tf.math.add(self.temp_pool5, self.conv_layers(bgri))#, axis=0)
-#            ntens.assign(ntens+1)
-#            #stack_pool6 = tf.stack(stack_pool5, self.conv_layers(bgri))
-#                #self.avg_pool5 = tf.reduce_mean(self.conv_layers(bgr), axis=0)    
-#        self.temp_pool5 = self.temp_pool5/ntens         
-#        #self.temp_pool5 = tf.reduce_mean(stack_pool5, axis=0) 
-#        self.new_fc6 = self.fc_layer(self.temp_pool5, 131072, 4096, "new_fc6")  # 25088 = ((224 // (2 ** 5)) ** 2) * 512
-#        self.new_relu6 = tf.nn.relu(self.new_fc6)
-#        if train_mode is not None:
-#            self.new_relu6 = tf.cond(train_mode, lambda: tf.nn.dropout(self.new_relu6, self.dropout), lambda: self.new_relu6)
-#        elif self.trainable:
-#            self.new_relu6 = tf.nn.dropout(self.new_relu6, self.dropout)
-#
-#        self.new_fc7 = self.fc_layer(self.new_relu6, 4096, 4096, "new_fc7")
-#        self.new_relu7 = tf.nn.relu(self.new_fc7)
-#        if train_mode is not None:
-#            self.new_relu7 = tf.cond(train_mode, lambda: tf.nn.dropout(self.new_relu7, self.dropout), lambda: self.new_relu7)
-#        elif self.trainable:
-#            self.new_relu7 = tf.nn.dropout(self.new_relu7, self.dropout)
-#
-#        self.new_fc8 = self.fc_layer(self.new_relu7, 4096, 2, "new_fc8")
-#
-#        self.new_prob = tf.nn.softmax(self.new_fc8, name="new_prob")        
-        
-        
-        
-        
-        
-        
-#    def build_loop_tbnails(self, rgb_list, no_images=10, train_mode=None, reuse=False):
-#        """
-#        load variable from npy to build the VGG
-#
-#        :param rgb: rgb image [batch, height, width, 3] values scaled [0, 1]
-#        :param train_mode: a bool tensor, usually a placeholder: if True, dropout will be turned on
-#        """
-##        with tf.variable_scope('NewVGG'):
-##        # image is 256 x 256 x input_c_dim
-##            if reuse:
-##                tf.get_variable_scope().reuse_variables()
-##            else:
-##                assert tf.get_variable_scope().reuse is False
-#        rgb_list_scaled = rgb_list * 255.00
-#
-#        # Convert RGB to BGR
-#        red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=rgb_list_scaled)
-#        assert red.get_shape().as_list()[1:] == [self.imsize, self.imsize, 1]
-#        assert green.get_shape().as_list()[1:] == [self.imsize, self.imsize, 1]
-#        assert blue.get_shape().as_list()[1:] == [self.imsize, self.imsize, 1]
-#        bgr_list = tf.concat(axis=3, values=[
-#            blue - VGG_MEAN[0],
-#            green - VGG_MEAN[1],
-#            red - VGG_MEAN[2],
-#        ])
-#        assert bgr_list.get_shape().as_list()[1:] == [self.imsize, self.imsize, 3]
-#        
-#        bgr = tf.expand_dims(bgr_list[0,:,:,:],0)
-#        self.temp_pool5 = self.conv_layers(bgr)
-#        stack_pool5 = self.temp_pool5 
-#        
-#        
-#        ntens = tf.Variable(1.0)
-#        for o in range(1, no_images):
-#            #print(o)
-#            bgri=tf.expand_dims(bgr_list[o,:,:,:],0)
-#            self.temp_pool5 = tf.math.add(self.temp_pool5, self.conv_layers(bgri))#, axis=0)
-#            ntens.assign(ntens+1)
-#            #stack_pool6 = tf.stack(stack_pool5, self.conv_layers(bgri))
-#                #self.avg_pool5 = tf.reduce_mean(self.conv_layers(bgr), axis=0)    
-#        self.temp_pool5 = self.temp_pool5/ntens         
-#        #self.temp_pool5 = tf.reduce_mean(stack_pool5, axis=0) 
-#        self.new_fc6 = self.fc_layer(self.temp_pool5, 2048, 2048, "new_fc6")  # 25088 = ((224 // (2 ** 5)) ** 2) * 512
-#        self.new_relu6 = tf.nn.relu(self.new_fc6)
-#        if train_mode is not None:
-#            self.new_relu6 = tf.cond(train_mode, lambda: tf.nn.dropout(self.new_relu6, self.dropout), lambda: self.new_relu6)
-#        elif self.trainable:
-#            self.new_relu6 = tf.nn.dropout(self.new_relu6, self.dropout)
-#
-#        self.new_fc7 = self.fc_layer(self.new_relu6, 2048, 2048, "new_fc7")
-#        self.new_relu7 = tf.nn.relu(self.new_fc7)
-#        if train_mode is not None:
-#            self.new_relu7 = tf.cond(train_mode, lambda: tf.nn.dropout(self.new_relu7, self.dropout), lambda: self.new_relu7)
-#        elif self.trainable:
-#            self.new_relu7 = tf.nn.dropout(self.new_relu7, self.dropout)
-#
-#        self.new_fc8 = self.fc_layer(self.new_relu7, 2048, 2, "new_fc8")
-#
-#        self.new_prob = tf.nn.softmax(self.new_fc8, name="new_prob")            
+       
         
         
         
