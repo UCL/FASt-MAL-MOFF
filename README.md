@@ -49,3 +49,24 @@ This will create a subfolder in the --output_folder corresponding to each of the
 This will create a subfolder in the --output_folder corresponding to each of the folders existing in the --dataset_path. In each of these subfolders (corresponding to a RBF sample) this script will write images of parasite-like objects cropped from the initial image fields. 
 
 
+### *Training*
+
+The model architecture and code is based on [tensorflow-vgg16](https://github.com/ry/tensorflow-vgg16). We modified a vgg architecture with the convolutional layers pre-trained on the ImageNet dataset. 
+
+For Sickle Cell Detection:
+
+    python moff_vgg19_sickle.py --dataset /path/to/your/training/segmented/dataset/ --csv_labels /path/to/the/file/containing/the/weak/sample/level/labels --save_dir /path/to/save/trained/model --test_dir /path/to/your/test/segmented/dataset --test_csv_labels /path/to/your/test/weak/labels --output_dir /path/where/you/want/to/save/the/predictions 
+    
+For Malaria Detection: 
+
+    python moff_vgg19_malaria.py --dataset /path/to/your/training/segmented/dataset/ --csv_labels /path/to/the/file/containing/the/weak/sample/level/labels --save_dir /path/to/save/trained/model --test_dir /path/to/your/test/segmented/dataset --test_csv_labels /path/to/your/test/weak/labels --output_dir /path/where/you/want/to/save/the/predictions 
+
+There is not a significant difference between the two scripts. There are some specific parameters hard coded for each case.
+
+
+
+
+
+
+
+
