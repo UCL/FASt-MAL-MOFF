@@ -100,10 +100,10 @@ Output the test image fields:
 
 ## **Requirements**
 
-Python3.6
-Numpy
-OpenCV
-scikit-image
-tensorflow 1.3
+*Python3.6
+*Numpy
+*OpenCV
+*scikit-image
+*tensorflow 1.3
 
 
