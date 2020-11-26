@@ -137,7 +137,7 @@ if opt.dataset2 is not None:
     subdirs2 = [x[0] for x in os.walk(opt.dataset2)]
     subdirs=subdirs+subdirs2
 #print (subdirs)  
-for subdir in subdirs[1:]: 
+for subdir in subdirs: 
     predicted_rois = []
     dataset_path = subdir#'/home/petre/mount_point/validation_data/355/'
     #print (dataset_path.split(os.path.sep))
@@ -146,6 +146,14 @@ for subdir in subdirs[1:]:
     print (dataset_path)
 #    if dataset_id in fmal_list:
         #print(dataset_id, fmal_list[10])
+    if subdirs.index(subdir) % 3 == 0:
+            output_folder=os.path.join(test_path, dataset_id)
+    else:
+            output_folder=os.path.join(train_path, dataset_id)    
+
+    if not os.path.exists(output_folder):
+                os.makedirs(output_folder)             
+
     image_files=[] 
     for file in os.listdir(dataset_path):
         print(file)
@@ -157,14 +165,8 @@ for subdir in subdirs[1:]:
     start_time=time.time()
     current_shapeid=0
     for img_file in image_files:#s[:3]: #while True:
-        if image_files.index(img_file) % 2 == 0:
-            output_folder=os.path.join(train_path, dataset_id)
-        else:
-            output_folder=os.path.join(test_path, dataset_id)
-        
-        if not os.path.exists(output_folder):
-                os.makedirs(output_folder)             
 
+        
         img = cv2.imread(img_file)
         
         if img is not None:
