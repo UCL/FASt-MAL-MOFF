@@ -1,5 +1,5 @@
 
-# Multiple Object Feature Fusion (MOFF) for weakly supervised deep learning
+# Multiple Instance Learning for Cell Assessment (MILCA)
 
 
 
@@ -18,12 +18,23 @@ You can download the images used to train the models here:
 
 - Blood Film Smears (BFS) for sickle cell detection: https://doi.org/10.5522/04/12407567
 - Thick Blood Films (TBF) malaria parasite detection: https://doi.org/10.5522/04/12173568
+- Blood Film Smears (BFS) from normal and ALL patients for lymphoblast cell detection: http://homes.di.unimi.it/scotti/all/
 
 Each folder in each dataset represents a sample (xxyyzz-tt-...). Each folder in the TBF dataset contains 100 image fields acquired with a 100x/1.4 NA oil magnification objective. Each folder in the BFS dataset contains 10 to 20 image fields acquired with a 100x/1.4 NA oil magnification objective.   
 Each dataset contains a file named 'slides_labels.csv' that stores the weak sample level labels. Each row of the csv file looks like: <sample-id>, <label> (0 or 1).   
 
 
 ## **Using the code**
+
+
+### *White Blood Cell Segmentation* 
+
+python segment_wbcs.py --dataset_path /path/to/your/dataset/or/downloaded/dataset/ --output_folder /path/to/an/output/destination/ 
+
+This will create a subfolder in the --output_folder corresponding to each of the images existing in the --dataset_path. In each of these subfolders (corresponding to a BFS sample) this script will write images of individual WBCs cropped from the initial image fields. 
+
+
+
 
 ### *Red Blood Cell Segmentation* 
 
@@ -66,8 +77,18 @@ There is not a significant difference between the two scripts. There are some sp
 
 
 ### *Trained models*
-Two trained models (one for malaria, one for SCD) can be downloaded from here:
-https://drive.google.com/drive/folders/1GsGtfCi3CTRXBXSpOQABRQoZLwGc5TbS?usp=sharing
+Four trained models (ALL, SCD, SMA, MALARIA) can be downloaded from here:
+https://drive.google.com/drive/folders/1tGDRBta1RbwE4brYkv0_qcThnKuim_P-?usp=sharing
+
+### *Lymphoblast Detection Test*
+Once a model is trained on the ALL vs Normal weak labels, it can be used to identify individual blast cells in image fields: 
+
+    python moff_test_detect_blast.py --fov ../test/Im024_1.jpg --trained_model /path/to/your/trained/model --output_dir ../output_test
+
+![WBC detection](/figs/blast_detection_test.png)  
+<p align="center">
+ Lymphoblast detection in BFS using MILCA</center>
+</p>
 
 
 
@@ -80,7 +101,7 @@ Output the test image fields:
 
 ![RBC detection](/figs/sickle_detection_test.png)  
 <p align="center">
- Individual abdnormal Sickle Cell detection in BFS using MOFF</center>
+ Individual abdnormal Sickle Cell detection in BFS using MILCA</center>
 </p>
 
 ### *Malaria Parasite Detection Test*
@@ -93,12 +114,12 @@ Output the test image fields:
 
 ![RBC detection](/figs/test_parasite_detection.png)  
 <p align="center">
- Individual P.Falciparum parasite detection in TBF with MOFF</center>
+ Individual P.Falciparum parasite detection in TBF with MILCA</center>
 </p>
 
 
 
-## **Requirements**
+## **System Requirements**
 
 - Python3.6
 - Numpy
