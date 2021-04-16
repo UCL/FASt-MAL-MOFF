@@ -29,7 +29,7 @@ Each dataset contains a file named 'slides_labels.csv' that stores the weak samp
 
 ### *White Blood Cell Segmentation* 
 
-python segment_wbcs.py --dataset_path /path/to/your/dataset/or/downloaded/dataset/ --output_folder /path/to/an/output/destination/ 
+    python segment_wbcs.py --dataset_path /path/to/your/dataset/or/downloaded/dataset/ --output_folder /path/to/an/output/destination/ 
 
 This will create a subfolder in the --output_folder corresponding to each of the images existing in the --dataset_path. In each of these subfolders (corresponding to a BFS sample) this script will write images of individual WBCs cropped from the initial image fields. 
 
