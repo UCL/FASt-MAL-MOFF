@@ -1,5 +1,5 @@
 
-# Multiple Instance Learning for Cell Assessment (MILCA)
+# Multiple Instance Learning for Blood Film Microscopy Morphological Analysis 
 
 
 
@@ -77,8 +77,9 @@ There is not a significant difference between the two scripts. There are some sp
 
 
 ### *Trained models*
-Four trained models (ALL, SCD, SMA, MALARIA) can be downloaded from here:
-https://drive.google.com/drive/folders/1tGDRBta1RbwE4brYkv0_qcThnKuim_P-?usp=sharing
+
+The malaria MOFF trained model: https://drive.google.com/file/d/1f8v0-EX0xVwiGnKhvD0d-UJ8Z6SUjkjv/view?usp=share_link
+
 
 ### *Lymphoblast Detection Test*
 Once a model is trained on the ALL vs Normal weak labels, it can be used to identify individual blast cells in image fields: 
